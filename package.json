@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/tpampilon/tinyapp/issues"
   },
-  "homepage": "https://github.com/tpampilon/tinyapp#readme"
+  "homepage": "https://github.com/tpampilon/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
