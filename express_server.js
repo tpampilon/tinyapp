@@ -31,6 +31,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 }); 
 
+// edits the longURL from urls_show
+app.post("/urls/:shortURL/edit", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+  res.redirect("/urls");
+});
+
+// urls index list
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase};
   res.render("urls_index", templateVars);
