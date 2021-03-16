@@ -16,49 +16,47 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-
+// generates a randomized shortURL and creates a new object in urlDatabase
 app.post("/urls", (req, res) => {
-  
   const shortURL = generateRandomString();
-
   urlDatabase[shortURL] = req.body.longURL;
-  
   res.redirect(`/urls/${shortURL}`);
-
-  console.log(req.body.longURL);  
-  // res.send("Ok");        
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase} ;
+  const templateVars = { urls: urlDatabase};
   res.render("urls_index", templateVars);
 });
 
+// route containing shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
+// route that redirects the client to the longURL site
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]
+  const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
+// default page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
 function generateRandomString() {
 
