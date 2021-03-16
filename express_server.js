@@ -25,10 +25,17 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// route that deletes shortURLs
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+}); 
+
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase};
   res.render("urls_index", templateVars);
 });
+
 
 // route containing shortURL
 app.get("/urls/:shortURL", (req, res) => {
@@ -71,4 +78,3 @@ function generateRandomString() {
   }
   return random;
 }
-
