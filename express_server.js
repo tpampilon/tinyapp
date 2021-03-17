@@ -28,7 +28,7 @@ const users = {
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
-}
+};
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
@@ -92,7 +92,7 @@ app.post("/login", (req, res) => {
 
 // logout logic
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -110,6 +110,14 @@ app.post("/register", (req, res) => {
   const id = generateRandomString(13);
   const email = req.body.email;
   const password = req.body.password;
+  const cookieId = req.cookies.user_id
+
+  if (email === '' || password === '') {
+    res.send(`Error 400 Bad Request`);
+  }
+  if (getUserByEmail(email) === cookieId) {
+    res.send(`Error 400 Bad Request`);
+  }
   
   users[id] = { 
     id: id,
@@ -117,7 +125,6 @@ app.post("/register", (req, res) => {
     password: password
   };
   res.cookie("user_id", users[id].id);
-  // console.log(`users object: ${JSON.stringify(users)}`);
   res.redirect('/urls');
 });
 
@@ -132,11 +139,10 @@ app.get("*", (req, res) => {
 
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp is listening on port ${PORT}!`);
 });
 
 function generateRandomString(idLength) {
-
   const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const length = idLength;
   let random = '';
@@ -146,3 +152,14 @@ function generateRandomString(idLength) {
   }
   return random;
 }
+
+function getUserByEmail(mail) {
+  let userId = undefined;
+
+  for (user in users) {
+    if (users[user].email === mail) {
+      userId = users[user].id
+    } 
+  }
+  return userId;
+};
