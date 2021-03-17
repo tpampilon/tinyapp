@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 
 app.set("view engine", "ejs");
 
-// Middleware
+// middleware
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -28,7 +28,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect('/urls');
 });
 
 // route that deletes shortURLs
