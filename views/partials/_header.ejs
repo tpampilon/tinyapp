@@ -20,8 +20,8 @@
     <div>
     <% } %>
     <% if (username) { %>
-      <%= `Logged in As ${username}`; %> 
-    <button method="POST" action="/logout" style="margin: 1em" type="submit" class="btn btn-primary">Logout</button>
+      <%= `Logged in as: ${username}`; %> 
+      <form method="POST" action="/logout"><button style="margin: 1em" type="submit" class="btn btn-primary">Logout</button></form>
     <% } %>
     </div>
   </nav>
