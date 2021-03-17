@@ -10,7 +10,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (username === undefined) { %>
+    <% if (users[user_id] === undefined) { %>
     <form class="form-inline" action="/login" method="POST">
       <div class="form-group mb-2">
         <input class="form-control" type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
@@ -19,8 +19,8 @@
     </form>
     <div>
     <% } %>
-    <% if (username) { %>
-      <%= `Logged in as: ${username}`; %> 
+    <% if (users[user_id]) { %>
+      <%= `Logged in as: ${users[user_id].email}`; %> 
       <form method="POST" action="/logout"><button style="margin: 1em" type="submit" class="btn btn-primary">Logout</button></form>
     <% } %>
     </div>
