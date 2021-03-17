@@ -17,6 +17,19 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     username: req.cookies["username"],
@@ -26,7 +39,7 @@ app.get("/urls/new", (req, res) => {
 
 // generates a randomized shortURL and creates a new object in urlDatabase
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
+  const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect('/urls');
 });
@@ -80,9 +93,36 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+// register page
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("register", templateVars);
+});
+
+// register POST where we take requests from register pages
+app.post("/register", (req, res) => {
+  const id = generateRandomString(13);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  users[id] = { 
+    id: id,
+    email: email,
+    password: password
+  };
+  
+  res.redirect('/urls');
+});
+
 // default page
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect('/urls');
+});
+
+app.get("*", (req, res) => {
+  res.redirect("404");
 });
 
 
@@ -90,10 +130,10 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-function generateRandomString() {
+function generateRandomString(idLength) {
 
   const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const length = 6;
+  const length = idLength;
   let random = '';
 
   for (let i = length; i > 0; i--) {
