@@ -84,10 +84,22 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-// assign cookies to a username
+// login page
+app.get("/login", (req, res) => {
+  const templateVars = {
+    users: users,
+    user_id: req.cookies.user_id
+  };
+  res.render('login', templateVars)
+});
+
+// login post that verifies email and password
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
+  const templateVars = {
+    users: users,
+    user_id: req.cookies.user_id
+  };
+  res.render('login', templateVars)
 });
 
 // logout logic
@@ -133,9 +145,9 @@ app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
-app.get("*", (req, res) => {
-  res.redirect("404");
-});
+// app.get("*", (req, res) => {
+//   res.redirect("404");
+// });
 
 
 app.listen(PORT, () => {
