@@ -13,8 +13,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "testtest" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "testtest" }
 };
 
 const users = { 
@@ -40,13 +40,20 @@ app.get("/urls/new", (req, res) => {
     users: users,
     user_id: req.cookies.user_id
   };
+  // used cookieId = templateVars.user_id for clarity
+  const cookieId = templateVars.user_id;
+  if (templateVars.users[cookieId] === undefined) {
+    res.redirect('/login');
+  }
   res.render("urls_new", templateVars);
 });
 
 // generates a randomized shortURL and creates a new object in urlDatabase
 app.post("/urls", (req, res) => {
+  const userId = req.cookies.user_id;
   const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: users[userId].id};
+  
   res.redirect('/urls');
 });
 
