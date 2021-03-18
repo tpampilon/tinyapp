@@ -27,6 +27,11 @@ const users = {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
+  },
+  'testtest': {
+    id: 'testtest',
+    email: "test@test.com",
+    password: "1234"
   }
 };
 
@@ -99,6 +104,21 @@ app.post("/login", (req, res) => {
     users: users,
     user_id: req.cookies.user_id
   };
+  const email = req.body.email;
+  const password = req.body.password;
+  const idEmail = getUserByEmail(email);
+
+  if (idEmail === undefined) {
+    res.send('Error 403 Forbidden');
+  }
+  if (users[idEmail].password !== password) {
+    res.send('Error 403 Forbidden');
+  }
+  if (users[idEmail].email === email && users[idEmail].password === password) {
+    res.cookie("user_id", users[idEmail].id);
+    res.redirect('/urls');
+  }
+
   res.render('login', templateVars)
 });
 
@@ -122,15 +142,14 @@ app.post("/register", (req, res) => {
   const id = generateRandomString(13);
   const email = req.body.email;
   const password = req.body.password;
-  const cookieId = req.cookies.user_id
-
+  
   if (email === '' || password === '') {
     res.send(`Error 400 Bad Request`);
   }
-  if (getUserByEmail(email) === cookieId) {
+  if (getUserByEmail(email)) {
     res.send(`Error 400 Bad Request`);
   }
-  
+
   users[id] = { 
     id: id,
     email: email,
