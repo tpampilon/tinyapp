@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 
 app.set("view engine", "ejs");
 
@@ -32,7 +33,7 @@ const users = {
   'testtest': {
     id: 'testtest',
     email: "test@test.com",
-    password: "1234"
+    password: "$2a$10$HZ2FDxu/0KX3z7HPbO4PZeBSyWi2QKXzIIWaGMIHB6a.UbTZk0Lc6"
   }
 };
 
@@ -109,11 +110,9 @@ app.get("/urls/:shortURL", (req, res) => {
     users: users,
     user_id: req.cookies.user_id
   };
-
   if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
     res.send('You must be logged in to the correct user to access this page');
   }
-
   res.render("urls_show", templateVars);
 });
 
@@ -141,18 +140,16 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const idEmail = getUserByEmail(email);
-
-  if (idEmail === undefined) {
+  if (!idEmail) {
     res.send('Error 403 Forbidden');
   }
-  if (users[idEmail].password !== password) {
+  if (!bcrypt.compareSync(password, users[idEmail].password)) {
     res.send('Error 403 Forbidden');
   }
-  if (users[idEmail].email === email && users[idEmail].password === password) {
+  if (users[idEmail].email === email && bcrypt.compareSync(password, users[idEmail].password)) {
     res.cookie("user_id", users[idEmail].id);
     res.redirect('/urls');
   }
-
   res.render('login', templateVars)
 });
 
@@ -173,23 +170,22 @@ app.get("/register", (req, res) => {
 
 // register POST where we take requests from register pages
 app.post("/register", (req, res) => {
-  const id = generateRandomString(13);
+  const randomId = generateRandomString(13);
   const email = req.body.email;
   const password = req.body.password;
-  
+  const hashedPassword = bcrypt.hashSync(password, 10);
   if (email === '' || password === '') {
     res.send(`Error 400 Bad Request`);
   }
   if (getUserByEmail(email)) {
     res.send(`Error 400 Bad Request`);
   }
-
-  users[id] = { 
-    id: id,
+  users[randomId] = { 
+    id: randomId,
     email: email,
-    password: password
+    password: hashedPassword
   };
-  res.cookie("user_id", users[id].id);
+  res.cookie("user_id", users[randomId].id);
   res.redirect('/urls');
 });
 
@@ -198,9 +194,9 @@ app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
-// app.get("*", (req, res) => {
-//   res.redirect("404");
-// });
+app.get("*", (req, res) => {
+  res.redirect("/urls");
+});
 
 
 app.listen(PORT, () => {
