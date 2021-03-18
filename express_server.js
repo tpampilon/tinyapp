@@ -65,7 +65,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // edits the longURL from urls_show
 app.post("/urls/:shortURL/edit", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
@@ -83,7 +83,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     users: users,
     user_id: req.cookies.user_id
   };
@@ -92,7 +92,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // route that redirects the client to the longURL site
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
