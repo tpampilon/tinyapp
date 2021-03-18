@@ -60,12 +60,18 @@ app.post("/urls", (req, res) => {
 
 // route that deletes shortURLs
 app.post("/urls/:shortURL/delete", (req, res) => {
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+    res.send('You must be logged in access this feature');
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
 // edits the longURL from urls_show
 app.post("/urls/:shortURL/edit", (req, res) => {
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+    res.send('You must be logged in access this feature');
+  }
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
@@ -93,9 +99,6 @@ app.get("/urls/:shortURL", (req, res) => {
 
   if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
     res.send('You must be logged in to the correct user to access this page');
-  }
-  if (req.cookies.user_id === undefined) {
-    res.send('You must be logged in to access this page');
   }
 
   res.render("urls_show", templateVars);
