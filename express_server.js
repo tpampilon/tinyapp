@@ -14,7 +14,8 @@ app.use(cookieParser());
 
 let urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "testtest" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "testtest" }
+  "9sm5xK": { longURL: "http://www.google.com", userID: "testtest" },
+  "5sfdsK": { longURL: "http://www.facebook.com", userID: "nottesttest" }
 };
 
 const users = { 
@@ -71,11 +72,13 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 // urls index list
 app.get("/urls", (req, res) => {
+  const shortUrlsOnly = urlsForUser(req.cookies.user_id);
   const templateVars = {
-    urls: urlDatabase,
+    urls: shortUrlsOnly,
     users: users,
     user_id: req.cookies.user_id
   };
+
   res.render("urls_index", templateVars);
 });
 
@@ -87,6 +90,14 @@ app.get("/urls/:shortURL", (req, res) => {
     users: users,
     user_id: req.cookies.user_id
   };
+
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+    res.send('You must be logged in to the correct user to access this page');
+  }
+  if (req.cookies.user_id === undefined) {
+    res.send('You must be logged in to access this page');
+  }
+
   res.render("urls_show", templateVars);
 });
 
@@ -200,4 +211,14 @@ function getUserByEmail(mail) {
     } 
   }
   return userId;
+};
+
+function urlsForUser(id) {
+  let allUrls = {};
+  for (let urls in urlDatabase){
+    if (urlDatabase[urls].userID === id) {
+      allUrls[urls] = urlDatabase[urls];
+    }
+  }
+ return allUrls;
 };
