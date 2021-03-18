@@ -85,8 +85,21 @@ app.get("/urls", (req, res) => {
     user_id: req.cookies.user_id
   };
 
+  if (users[req.cookies.user_id] === undefined) {
+    res.redirect('/notlogged');
+  }
+
   res.render("urls_index", templateVars);
 });
+
+app.get("/notlogged", (req, res) => {
+  const templateVars = {
+    users: users,
+    user_id: req.cookies.user_id
+  };
+
+  res.render('register_or_login', templateVars);
+}); 
 
 // route containing shortURL
 app.get("/urls/:shortURL", (req, res) => {
