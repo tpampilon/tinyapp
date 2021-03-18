@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const hfunc = require('./helpers');
 
 app.set("view engine", "ejs");
 
@@ -43,40 +44,6 @@ const users = {
   }
 };
 
-// Helper Functions
-
-const generateRandomString = (idLength) => {
-  const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const length = idLength;
-  let random = '';
-
-  for (let i = length; i > 0; i--) {
-    random += characters[Math.round(Math.random() * (characters.length - 1))];
-  }
-  return random;
-};
-
-const getUserByEmail = (mail) => {
-  let userId = undefined;
-
-  for (user in users) {
-    if (users[user].email === mail) {
-      userId = users[user].id;
-    }
-  }
-  return userId;
-};
-
-const urlsForUser = (id) => {
-  let allUrls = {};
-  for (let urls in urlDatabase) {
-    if (urlDatabase[urls].userID === id) {
-      allUrls[urls] = urlDatabase[urls];
-    }
-  }
-  return allUrls;
-};
-
 // Routes
 
 app.get("/urls/new", (req, res) => {
@@ -95,8 +62,14 @@ app.get("/urls/new", (req, res) => {
 // generates a randomized shortURL and creates a new object in urlDatabase
 app.post("/urls", (req, res) => {
   const userId = req.session.user_id;
-  const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: users[userId].id};
+  const shortURL = hfunc.generateRandomString(6);
+  
+  urlDatabase[shortURL] = { 
+
+    longURL: req.body.longURL, 
+    userID: users[userId].id
+  
+  };
   
   res.redirect('/urls');
 });
@@ -106,7 +79,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     res.status(401).send('You must be logged in access this feature');
   }
+
   delete urlDatabase[req.params.shortURL];
+  
   res.redirect("/urls");
 });
 
@@ -115,13 +90,15 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     res.status(401).send('You must be logged in access this feature');
   }
+
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+  
   res.redirect("/urls");
 });
 
 // urls index list
 app.get("/urls", (req, res) => {
-  const shortUrlsOnly = urlsForUser(req.session.user_id);
+  const shortUrlsOnly = hfunc.urlsForUser(req.session.user_id, urlDatabase);
   const templateVars = {
     urls: shortUrlsOnly,
     users: users,
@@ -153,15 +130,18 @@ app.get("/urls/:shortURL", (req, res) => {
     users: users,
     user_id: req.session.user_id
   };
+
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     res.status(401).send('You must be logged in access this feature');
   }
+
   res.render("urls_show", templateVars);
 });
 
 // route that redirects the client to the longURL site
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
+  
   res.redirect(longURL);
 });
 
@@ -171,6 +151,7 @@ app.get("/login", (req, res) => {
     users: users,
     user_id: req.session.user_id
   };
+  
   res.render('login', templateVars);
 });
 
@@ -182,7 +163,7 @@ app.post("/login", (req, res) => {
   };
   const email = req.body.email;
   const password = req.body.password;
-  const idEmail = getUserByEmail(email);
+  const idEmail = hfunc.getUserByEmail(email, users);
   if (!idEmail) {
     res.status(403).send('Wrong password or email');
   }
@@ -193,6 +174,7 @@ app.post("/login", (req, res) => {
     req.session.user_id = users[idEmail].id;
     res.redirect('/urls');
   }
+  
   res.render('login', templateVars);
 });
 
@@ -208,36 +190,40 @@ app.get("/register", (req, res) => {
     users: users,
     user_id: req.session.user_id
   };
+  
   res.render("register", templateVars);
 });
 
 // register POST where we take requests from register pages
 app.post("/register", (req, res) => {
-  const randomId = generateRandomString(13);
+  const randomId = hfunc.generateRandomString(13);
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
+  
   if (email === '' || password === '') {
     res.status(400).send('Bad Request');
   }
-  if (getUserByEmail(email)) {
+  if (hfunc.getUserByEmail(email, users)) {
     res.status(400).send('Bad Request');
   }
+  
   users[randomId] = {
     id: randomId,
     email: email,
     password: hashedPassword
   };
+  
   req.session.user_id = users[randomId].id;
   res.redirect('/urls');
 });
 
-// catch page
+//default page
 app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
-//further catching page
+//catch page
 app.get("*", (req, res) => {
   res.redirect("/urls");
 });
