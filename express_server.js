@@ -46,6 +46,7 @@ const users = {
 
 // Routes
 
+// route for new shortURL creation
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     users: users,
@@ -64,9 +65,9 @@ app.post("/urls", (req, res) => {
   const userId = req.session.user_id;
   const shortURL = hfunc.generateRandomString(6);
   
-  urlDatabase[shortURL] = { 
+  urlDatabase[shortURL] = {
 
-    longURL: req.body.longURL, 
+    longURL: req.body.longURL,
     userID: users[userId].id
   
   };
@@ -85,7 +86,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-// edits the longURL from urls_show
+// posts the edit of the longURL from urls_show
 app.post("/urls/:shortURL/edit", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     res.status(401).send('You must be logged in access this feature');
@@ -112,7 +113,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// for users that are not logged in yet
+// route for users that are not logged in yet
 app.get("/notlogged", (req, res) => {
   const templateVars = {
     users: users,
@@ -126,11 +127,14 @@ app.get("/notlogged", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    dataBase: urlDatabase,
     users: users,
     user_id: req.session.user_id
   };
-
+  
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).send('Page does not exist');
+  }
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
     res.status(401).send('You must be logged in access this feature');
   }
@@ -140,9 +144,12 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // route that redirects the client to the longURL site
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
   
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).send('Page does not exist');
+  }
+  
+  res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
 // login page
@@ -164,6 +171,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const idEmail = hfunc.getUserByEmail(email, users);
+  
   if (!idEmail) {
     res.status(403).send('Wrong password or email');
   }
@@ -207,7 +215,7 @@ app.post("/register", (req, res) => {
   if (hfunc.getUserByEmail(email, users)) {
     res.status(400).send('Bad Request');
   }
-  
+
   users[randomId] = {
     id: randomId,
     email: email,
@@ -225,7 +233,7 @@ app.get("/", (req, res) => {
 
 //catch page
 app.get("*", (req, res) => {
-  res.redirect("/urls");
+  res.redirect('/urls');
 });
 
 
