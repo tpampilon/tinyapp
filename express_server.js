@@ -55,8 +55,9 @@ app.get("/urls/new", (req, res) => {
   // used cookieId = templateVars.user_id for clarity
   const cookieId = templateVars.user_id;
   if (templateVars.users[cookieId] === undefined) {
-    res.redirect('/login');
+    return res.redirect('/login');
   }
+  
   res.render("urls_new", templateVars);
 });
 
@@ -78,7 +79,7 @@ app.post("/urls", (req, res) => {
 // route that deletes shortURLs
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
-    res.status(401).send('You must be logged in access this feature');
+    return res.status(401).send('You must be logged in access this feature');
   }
 
   delete urlDatabase[req.params.shortURL];
@@ -89,7 +90,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // posts the edit of the longURL from urls_show
 app.post("/urls/:shortURL/edit", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
-    res.status(401).send('You must be logged in access this feature');
+    return res.status(401).send('You must be logged in access this feature');
   }
 
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
@@ -107,7 +108,7 @@ app.get("/urls", (req, res) => {
   };
 
   if (users[req.session.user_id] === undefined) {
-    res.redirect('/notlogged');
+    return res.redirect('/notlogged');
   }
 
   res.render("urls_index", templateVars);
@@ -133,10 +134,10 @@ app.get("/urls/:shortURL", (req, res) => {
   };
   
   if (!urlDatabase[req.params.shortURL]) {
-    res.status(404).send('Page does not exist');
+    return res.status(404).send('Page does not exist');
   }
   if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
-    res.status(401).send('You must be logged in access this feature');
+    return res.status(401).send('You must be logged in access this feature');
   }
 
   res.render("urls_show", templateVars);
@@ -146,7 +147,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   
   if (!urlDatabase[req.params.shortURL]) {
-    res.status(404).send('Page does not exist');
+    return res.status(404).send('Page does not exist');
   }
   
   res.redirect(urlDatabase[req.params.shortURL].longURL);
@@ -173,14 +174,14 @@ app.post("/login", (req, res) => {
   const idEmail = hfunc.getUserByEmail(email, users);
   
   if (!idEmail) {
-    res.status(403).send('Wrong password or email');
+    return res.status(403).send('Wrong password or email');
   }
   if (!bcrypt.compareSync(password, users[idEmail].password)) {
-    res.status(403).send('Wrong password or email');
+    return res.status(403).send('Wrong password or email');
   }
   if (users[idEmail].email === email && bcrypt.compareSync(password, users[idEmail].password)) {
     req.session.user_id = users[idEmail].id;
-    res.redirect('/urls');
+    return res.redirect('/urls');
   }
   
   res.render('login', templateVars);
@@ -210,10 +211,10 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
   
   if (email === '' || password === '') {
-    res.status(400).send('Bad Request');
+    return res.status(400).send('Bad Request');
   }
   if (hfunc.getUserByEmail(email, users)) {
-    res.status(400).send('Bad Request');
+    return res.status(400).send('Bad Request');
   }
 
   users[randomId] = {
